@@ -6,29 +6,50 @@ import classes from './Cart.module.css';
 import CartContext from '../Store/cart-context';
 
 const Cart = (props) => {
+
   const cartCtx = useContext(CartContext);
+  console.log('calling cart item',props)
 
-  const totalAmount = `$${cartCtx.totalAmount.toFixed(2)}`;
-  const hasItems = cartCtx.items.length > 0;
+  const cartItemRemoveHandler = (id) => { 
+    // console.log('here',id)
+    // console.log(cartCtx.removeItem)
+    cartCtx.removeItem(id)
+  };
 
-  const cartItemRemoveHandler = (id) => {};
+  const cartItemAddHandler = (item) => {
+    cartCtx.addItem(item)
+  };
 
-  const cartItemAddHandler = (item) => {};
+  let totalAmount = 0;
+  cartCtx.items.forEach(item => 
+        totalAmount += (Number(item.price) * Number(item.quantity))
+        )
+  totalAmount = totalAmount.toFixed(2);
 
-  const cartItems = (
-    <ul className={classes['cart-items']}>
-      {cartCtx.items.map((item) => (
-        <CartItem
-          key={item.id}
-          name={item.name}
-          amount={item.amount}
-          price={item.price}
-          onRemove={cartItemRemoveHandler.bind(null, item.id)}
-          onAdd={cartItemAddHandler.bind(null, item)}
-        />
-      ))}
-    </ul>
-  );
+  const mergedItems = [];
+  cartCtx.items.forEach(item => {
+    const existingItem = mergedItems.find(
+      mergedItem => mergedItem.id === item.id
+    );
+    if (existingItem) {
+      existingItem.quantity = Number(existingItem.quantity) + Number(item.quantity);
+    } else {
+      mergedItems.push({ ...item });
+    }})
+
+  const cartItems = (<ul>
+     {mergedItems.map((item) =>
+    (<CartItem
+              key={item.quantity+item.id}
+              name={item.name}
+              quantity={item.quantity}
+              price={item.price}
+              onRemove={() => cartItemRemoveHandler(item.id)}
+              onAdd={()=>cartItemAddHandler({ ...item, quantity: 1 })}
+      />))
+    }</ul>)
+  
+  
 
   return (
     <Modal onClose={props.onClose}>
@@ -41,7 +62,7 @@ const Cart = (props) => {
         <button className={classes['button--alt']} onClick={props.onClose}>
           Close
         </button>
-        {hasItems && <button className={classes.button}>Order</button>}
+        {<button className={classes.button}>Order</button>}
       </div>
     </Modal>
   );

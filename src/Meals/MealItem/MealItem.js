@@ -9,7 +9,7 @@ const MealItem = (props) => {
                 <h3 className={classes.price}>${props.price}</h3>
             </div>
             <div>
-                <MealItemForm/>
+                <MealItemForm id={props.id} name={props.name} price={props.price} item={props}/>
             </div>
         </li>
     )
